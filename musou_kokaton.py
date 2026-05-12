@@ -332,41 +332,6 @@ class Life:
             self.rect.center = (WIDTH - 50 - (i * 50), HEIGHT - 50)
             screen.blit(self.image, self.rect)
 
-
-
-# class Life:
-#     """
-#     残機数が0になるまで死なない
-#     初期残機数：3
-#     発動条件：爆弾に当たるたびに1減る
-#     描画位置：画面右下（最右ハートの重心が下から50, 右から50）
-#     """
-#     def __init__(self, num: int):
-#         """
-#         引数 num：初期残機数
-#         """
-#         self.num = num
-#         self.image = pg.Surface((40, 40))
-#         self.image.set_colorkey((0, 0, 0)) 
-        
-#         points = [(16*math.sin(t/100)**3 + 20,
-#                    -(13*math.cos(t/100)-5*math.cos(2*t/100)-2*math.cos(3*t/100)-math.cos(4*t/100)) + 20
-#                    ) for t in range(0, 628)]
-#         pg.draw.polygon(self.image, (255, 0, 0), points) # 赤色のハート
-        
-#         self.rect = self.image.get_rect()
-
-#     def update(self, screen: pg.Surface):
-#         """
-#         現在の残機数分だけハートを画面右下に描画する
-#         """
-#         for i in range(self.num):
-#             self.rect.center = (WIDTH - 50 - (i * 50), HEIGHT - 50)  # # 右から50px、下から50pxの位置を起点に、左方向に並べる
-#             screen.blit(self.image, self.rect)
-
-
-
-
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -395,12 +360,10 @@ def main():
                 if score.value >= 200:
                     gravities.add(Gravity(400))
                     score.value -= 200
-        
-        screen.blit(bg_img, [0, 0])    
-        if event.type == pg.KEYDOWN and event.key == pg.K_e:
-            if score.value > 20:  # スコアが20より大きいか判定
-                score.value -= 20  
-                EMP(emys, bombs, screen)  
+            if event.type == pg.KEYDOWN and event.key == pg.K_e:
+                if score.value > 20:  # スコアが20より大きいか判定
+                    score.value -= 20  
+                    EMP(emys, bombs, screen)  
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -434,7 +397,7 @@ def main():
                 exps.add(Explosion(bomb,50))
                 score.value += 1
 
-            elif life.num == 0:  # ← hyper でも必ず判定される
+            elif life.num == 1:  # ← hyper でも必ず判定される
                 if bomb.state == "active": 
                     bird.change_img(8, screen)
                     score.update(screen)
@@ -443,18 +406,10 @@ def main():
                     return
             
             else:
-                life.num -= 1
-
-            # elif bomb.state == "active":  # emp判定
-            #     bird.change_img(8, screen)  # こうかとん悲しみエフェクト
-            #     score.update(screen)
-            #     pg.display.update()
-            #     time.sleep(2)
-            #     return
+                if bomb.state == "active":
+                    life.num -= 1
 
         bird.update(key_lst, screen, score)
-            
-        # bird.update(key_lst, screen)
         beams.update()
         beams.draw(screen)
         emys.update()
