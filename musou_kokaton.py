@@ -254,11 +254,74 @@ class Score:
         screen.blit(self.image, self.rect)
 
 
+class Life:
+    """
+    残機数が0になるまで死なない
+    初期残機数：3
+    発動条件：爆弾に当たるたびに1減る
+    描画位置：画面右下（最右ハートの重心が下から50, 右から50）
+    """
+    def __init__(self, num: int):
+        """
+        引数 num：初期残機数
+        """
+        self.num = num
+        self.image = pg.Surface((40, 40))
+        self.image.set_colorkey((0, 0, 0)) 
+        
+        points = [(16*math.sin(t/100)**3 + 20,
+                   -(13*math.cos(t/100)-5*math.cos(2*t/100)-2*math.cos(3*t/100)-math.cos(4*t/100)) + 20
+                   ) for t in range(0, 628)]
+        pg.draw.polygon(self.image, (255, 0, 0), points) # 赤色のハート
+        
+        self.rect = self.image.get_rect()
+
+    def update(self, screen: pg.Surface):
+        """
+        現在の残機数分だけハートを画面右下に描画する
+        """
+        for i in range(self.num):
+            self.rect.center = (WIDTH - 50 - (i * 50), HEIGHT - 50)  # # 右から50px、下から50pxの位置を起点に、左方向に並べる
+            screen.blit(self.image, self.rect)
+
+
+class Life:
+    """
+    残機数が0になるまで死なない
+    初期残機数：3
+    発動条件：爆弾に当たるたびに1減る
+    描画位置：画面右下（最右ハートの重心が下から50, 右から50）
+    """
+    def __init__(self, num: int):
+        """
+        引数 num：初期残機数
+        """
+        self.num = num
+        self.image = pg.Surface((40, 40))
+        self.image.set_colorkey((0, 0, 0)) 
+        
+        points = [(16*math.sin(t/100)**3 + 20,
+                   -(13*math.cos(t/100)-5*math.cos(2*t/100)-2*math.cos(3*t/100)-math.cos(4*t/100)) + 20
+                   ) for t in range(0, 628)]
+        pg.draw.polygon(self.image, (255, 0, 0), points) # 赤色のハート
+        
+        self.rect = self.image.get_rect()
+
+    def update(self, screen: pg.Surface):
+        """
+        現在の残機数分だけハートを画面右下に描画する
+        """
+        for i in range(self.num):
+            self.rect.center = (WIDTH - 50 - (i * 50), HEIGHT - 50)  # # 右から50px、下から50pxの位置を起点に、左方向に並べる
+            screen.blit(self.image, self.rect)
+
+
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load(f"fig/pg_bg.jpg")
     score = Score()
+    life = Life(3)
 
     bird = Bird(3, (900, 400))
     bombs = pg.sprite.Group()
@@ -295,11 +358,9 @@ def main():
             score.value += 1  # 1点アップ
 
         for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
-            if bird.state == "hyper": #無敵判定
-                exps.add(Explosion(bomb, 50))
-                score.value += 1
-            else:
-                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+            life.num -= 1  # ライフを1減らす
+            bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+            if life.num == 0:  # ライフが0未満になったらゲーム終了
                 score.update(screen)
                 pg.display.update()
                 time.sleep(2)
@@ -315,6 +376,7 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        life.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
